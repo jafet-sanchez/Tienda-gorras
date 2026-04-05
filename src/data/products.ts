@@ -1,0 +1,4 @@
+export const SHIPPING_COST = 17000
+export const FREE_SHIPPING_THRESHOLD = 300000
+
+export const WHATSAPP_NUMBER = '573018100766'
