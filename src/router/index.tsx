@@ -2,12 +2,10 @@ import { createBrowserRouter } from 'react-router-dom'
 import Layout from '../components/Layout'
 import CatalogPage from '../pages/catalog/CatalogPage'
 import ProductPage from '../pages/product/ProductPage'
-import LoginPage from '../pages/auth/LoginPage'
 import CheckoutPage from '../components/CheckoutPage'
 import ConfirmationPage from '../components/ConfirmationPage'
 import NotFoundPage from '../components/NotFoundPage'
 import ProtectedRoute from '../guards/ProtectedRoute'
-import PublicOnlyRoute from '../guards/PublicOnlyRoute'
 import DashboardLayout from '../pages/dashboard/DashboardLayout'
 import DashboardHome from '../pages/dashboard/DashboardHome'
 import ProductsPage from '../pages/dashboard/ProductsPage'
@@ -25,14 +23,6 @@ export const router = createBrowserRouter([
       { path: '/producto/:id', element: <ProductPage /> },
       { path: '/checkout',     element: <CheckoutPage /> },
       { path: '/confirmacion', element: <ConfirmationPage /> },
-
-      // Solo accesible sin sesión
-      {
-        element: <PublicOnlyRoute />,
-        children: [
-          { path: '/admin/login', element: <LoginPage /> },
-        ],
-      },
     ],
   },
 
