@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 import { formatCOP } from '../utils/formatPrice'
 import { WHATSAPP_NUMBER } from '../data/products'
+import { insertOrder } from '../services/orders'
+import { decrementStock } from '../services/products'
 
 export default function ConfirmationPage() {
   const { items, subtotal, shippingCost, total, shippingInfo, clearCart } = useCart()
@@ -44,7 +46,42 @@ export default function ConfirmationPage() {
 
   const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage())}`
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
+    // Guardar pedido y descontar stock en Supabase (no bloquear si falla)
+    try {
+      await insertOrder(
+        {
+          cliente: {
+            name: shippingInfo.name,
+            cedula: shippingInfo.cedula,
+            phone: shippingInfo.phone,
+            address: shippingInfo.address,
+            barrio: shippingInfo.barrio,
+            city: shippingInfo.city,
+            notes: shippingInfo.notes,
+          },
+          items: items.map(({ product, quantity }) => ({
+            id: product.id,
+            nombre: product.name,
+            precio: product.numericPrice,
+            cantidad: quantity,
+            subtotal: product.numericPrice * quantity,
+          })),
+          subtotal,
+          envio: shippingCost,
+          total,
+        },
+        shippingInfo.phone
+      )
+
+      // Descontar stock de cada producto (atómico, nunca baja de 0)
+      await Promise.all(
+        items.map(({ product, quantity }) => decrementStock(product.id, quantity))
+      )
+    } catch {
+      // El pedido de WhatsApp continúa aunque falle el guardado
+    }
+
     window.open(whatsappUrl, '_blank', 'noopener,noreferrer')
     clearCart()
     navigate('/')
@@ -128,10 +165,14 @@ export default function ConfirmationPage() {
           <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-3 text-sm">
             <dt className="text-xs tracking-widest uppercase text-text-muted">Nombre</dt>
             <dd className="text-text-primary">{shippingInfo.name}</dd>
+            <dt className="text-xs tracking-widest uppercase text-text-muted">Cédula</dt>
+            <dd className="text-text-primary tabular-nums">{shippingInfo.cedula}</dd>
             <dt className="text-xs tracking-widest uppercase text-text-muted">Teléfono</dt>
             <dd className="text-text-primary tabular-nums">{shippingInfo.phone}</dd>
             <dt className="text-xs tracking-widest uppercase text-text-muted">Dirección</dt>
             <dd className="text-text-primary">{shippingInfo.address}</dd>
+            <dt className="text-xs tracking-widest uppercase text-text-muted">Barrio</dt>
+            <dd className="text-text-primary">{shippingInfo.barrio}</dd>
             <dt className="text-xs tracking-widest uppercase text-text-muted">Ciudad</dt>
             <dd className="text-text-primary">{shippingInfo.city}</dd>
             {shippingInfo.notes && (

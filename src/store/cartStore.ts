@@ -4,8 +4,10 @@ import { SHIPPING_COST, FREE_SHIPPING_THRESHOLD } from '../data/products'
 
 export interface ShippingInfo {
   name: string
+  cedula: string
   phone: string
   address: string
+  barrio: string
   city: string
   notes: string
 }

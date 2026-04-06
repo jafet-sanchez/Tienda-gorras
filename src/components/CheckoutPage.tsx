@@ -12,8 +12,10 @@ export default function CheckoutPage() {
 
   const [form, setForm] = useState<ShippingInfo>({
     name: '',
+    cedula: '',
     phone: '',
     address: '',
+    barrio: '',
     city: '',
     notes: '',
   })
@@ -84,6 +86,20 @@ export default function CheckoutPage() {
             </label>
 
             <label className="flex flex-col gap-2">
+              <span className="text-xs tracking-widest uppercase text-text-secondary font-semibold">Cédula *</span>
+              <input
+                type="text"
+                name="cedula"
+                autoComplete="off"
+                required
+                value={form.cedula}
+                onChange={(e) => update('cedula', e.target.value)}
+                className="border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder-text-muted focus-visible:outline-none focus-visible:border-neon transition-[border-color] duration-200"
+                placeholder="1234567890…"
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
               <span className="text-xs tracking-widest uppercase text-text-secondary font-semibold">Teléfono / WhatsApp *</span>
               <input
                 type="tel"
@@ -108,6 +124,20 @@ export default function CheckoutPage() {
                 onChange={(e) => update('address', e.target.value)}
                 className="border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder-text-muted focus-visible:outline-none focus-visible:border-neon transition-[border-color] duration-200"
                 placeholder="Calle, número, barrio…"
+              />
+            </label>
+
+            <label className="flex flex-col gap-2">
+              <span className="text-xs tracking-widest uppercase text-text-secondary font-semibold">Barrio *</span>
+              <input
+                type="text"
+                name="barrio"
+                autoComplete="off"
+                required
+                value={form.barrio}
+                onChange={(e) => update('barrio', e.target.value)}
+                className="border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder-text-muted focus-visible:outline-none focus-visible:border-neon transition-[border-color] duration-200"
+                placeholder="Nombre del barrio…"
               />
             </label>
 
