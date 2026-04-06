@@ -36,6 +36,7 @@ export default function ProductEditPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<string, string>>>({})
 
   const [form, setForm] = useState<ProductInput>({
     nombre: '',
@@ -99,6 +100,21 @@ export default function ProductEditPage() {
 
   function set<K extends keyof ProductInput>(key: K, value: ProductInput[K]) {
     setForm((prev) => ({ ...prev, [key]: value }))
+    if (fieldErrors[key as string]) {
+      setFieldErrors((prev) => { const next = { ...prev }; delete next[key as string]; return next })
+    }
+  }
+
+  function validate(): boolean {
+    const errors: Record<string, string> = {}
+    if (!form.nombre.trim()) errors.nombre = 'El nombre es obligatorio.'
+    else if (form.nombre.trim().length < 2) errors.nombre = 'Mínimo 2 caracteres.'
+    if (form.precio <= 0) errors.precio = 'El precio debe ser mayor a 0.'
+    if (!Number.isInteger(form.precio)) errors.precio = 'El precio debe ser un número entero.'
+    if (form.stock < 0) errors.stock = 'El stock no puede ser negativo.'
+    if (!Number.isInteger(form.stock)) errors.stock = 'El stock debe ser un número entero.'
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
   }
 
   function handleFileSelect(e: ChangeEvent<HTMLInputElement>) {
@@ -144,6 +160,7 @@ export default function ProductEditPage() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+    if (!validate()) return
     setSaving(true)
 
     try {
@@ -199,11 +216,11 @@ export default function ProductEditPage() {
           </label>
           <input
             type="text"
-            required
             value={form.nombre}
             onChange={(e) => set('nombre', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+            className={`w-full px-3 py-2 bg-white border rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 ${fieldErrors.nombre ? 'border-red-400' : 'border-gray-300'}`}
           />
+          {fieldErrors.nombre && <p className="mt-1 text-xs text-red-500">{fieldErrors.nombre}</p>}
         </div>
 
         {/* Categoría + Tipo */}
@@ -215,7 +232,7 @@ export default function ProductEditPage() {
             <select
               value={form.categoria_id ?? ''}
               onChange={(e) => set('categoria_id', e.target.value || null)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
             >
               <option value="">Sin categoría</option>
               {categories.map((c) => (
@@ -230,7 +247,7 @@ export default function ProductEditPage() {
             <select
               value={form.tipo}
               onChange={(e) => set('tipo', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
             >
               {PRODUCT_TYPES.map((t) => (
                 <option key={t.value} value={t.value}>{t.label}</option>
@@ -247,12 +264,13 @@ export default function ProductEditPage() {
             </label>
             <input
               type="number"
-              required
-              min={0}
-              value={form.precio}
-              onChange={(e) => set('precio', Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              inputMode="numeric"
+              min={1}
+              value={form.precio || ''}
+              onChange={(e) => set('precio', e.target.value === '' ? 0 : Math.round(Number(e.target.value)))}
+              className={`w-full px-3 py-2 bg-white border rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${fieldErrors.precio ? 'border-red-400' : 'border-gray-300'}`}
             />
+            {fieldErrors.precio && <p className="mt-1 text-xs text-red-500">{fieldErrors.precio}</p>}
           </div>
           <div>
             <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
@@ -260,12 +278,13 @@ export default function ProductEditPage() {
             </label>
             <input
               type="number"
-              required
+              inputMode="numeric"
               min={0}
-              value={form.stock}
-              onChange={(e) => set('stock', Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900"
+              value={form.stock === 0 ? '' : form.stock}
+              onChange={(e) => set('stock', e.target.value === '' ? 0 : Math.round(Number(e.target.value)))}
+              className={`w-full px-3 py-2 bg-white border rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none ${fieldErrors.stock ? 'border-red-400' : 'border-gray-300'}`}
             />
+            {fieldErrors.stock && <p className="mt-1 text-xs text-red-500">{fieldErrors.stock}</p>}
           </div>
         </div>
 
@@ -278,7 +297,7 @@ export default function ProductEditPage() {
             rows={4}
             value={form.descripcion ?? ''}
             onChange={(e) => set('descripcion', e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
+            className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
           />
         </div>
 
