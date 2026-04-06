@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 import { useAuthStore } from '../store/authStore'
+import LoginPopover from './LoginPopover'
 
 export default function Navbar() {
   const { itemCount, setDrawerOpen } = useCart()
@@ -10,6 +11,7 @@ export default function Navbar() {
   const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [loginOpen, setLoginOpen] = useState(false)
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20)
@@ -83,19 +85,25 @@ export default function Navbar() {
             )}
           </button>
 
-          <button
-            type="button"
-            onClick={() => navigate(user ? '/admin' : '/admin/login')}
-            className={`relative p-2 transition-colors duration-300 ${user ? 'text-neon' : 'text-text-secondary hover:text-neon'}`}
-            aria-label={user ? 'Ir al panel de administración' : 'Iniciar sesión como administrador'}
-          >
-            <svg className="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
-            {user && (
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-neon rounded-full" />
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => user ? navigate('/admin') : setLoginOpen((o) => !o)}
+              className={`relative p-2 transition-colors duration-300 ${user ? 'text-neon' : 'text-text-secondary hover:text-neon'}`}
+              aria-label={user ? 'Ir al panel de administración' : 'Iniciar sesión como administrador'}
+              aria-expanded={!user ? loginOpen : undefined}
+            >
+              <svg className="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+              {user && (
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-neon rounded-full" />
+              )}
+            </button>
+            {loginOpen && !user && (
+              <LoginPopover onClose={() => setLoginOpen(false)} />
             )}
-          </button>
+          </div>
         </div>
 
         {/* Mobile: cart + user + hamburger */}
@@ -116,19 +124,25 @@ export default function Navbar() {
             )}
           </button>
 
-          <button
-            type="button"
-            onClick={() => navigate(user ? '/admin' : '/admin/login')}
-            className={`relative p-2 transition-colors duration-300 ${user ? 'text-neon' : 'text-text-secondary hover:text-neon'}`}
-            aria-label={user ? 'Ir al panel de administración' : 'Iniciar sesión como administrador'}
-          >
-            <svg className="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-            </svg>
-            {user && (
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-neon rounded-full" />
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => user ? navigate('/admin') : setLoginOpen((o) => !o)}
+              className={`relative p-2 transition-colors duration-300 ${user ? 'text-neon' : 'text-text-secondary hover:text-neon'}`}
+              aria-label={user ? 'Ir al panel de administración' : 'Iniciar sesión como administrador'}
+              aria-expanded={!user ? loginOpen : undefined}
+            >
+              <svg className="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+              </svg>
+              {user && (
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-neon rounded-full" />
+              )}
+            </button>
+            {loginOpen && !user && (
+              <LoginPopover onClose={() => setLoginOpen(false)} />
             )}
-          </button>
+          </div>
 
           <button
             type="button"

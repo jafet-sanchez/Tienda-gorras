@@ -16,8 +16,8 @@ export default function ProtectedRoute() {
     )
   }
 
-  // Sin sesión → redirigir al login
-  if (!user) return <Navigate to="/admin/login" replace />
+  // Sin sesión → redirigir al inicio (el login es el popover del Navbar)
+  if (!user) return <Navigate to="/" replace />
 
   // Con sesión → renderizar la ruta protegida
   return <Outlet />
