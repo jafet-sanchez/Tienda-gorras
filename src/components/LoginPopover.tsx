@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, type FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../services/supabase'
 
 interface Props {
@@ -12,6 +13,7 @@ export default function LoginPopover({ onClose }: Props) {
   const [loading, setLoading] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const emailRef = useRef<HTMLInputElement>(null)
+  const navigate = useNavigate()
 
   // Focus email al abrir
   useEffect(() => {
@@ -47,9 +49,10 @@ export default function LoginPopover({ onClose }: Props) {
     if (authError) {
       setError('Correo o contraseña incorrectos.')
       setLoading(false)
+    } else {
+      onClose()
+      navigate('/admin')
     }
-    // Si hay éxito: onAuthStateChange en useAuth actualiza el store
-    // y ProtectedRoute redirige automáticamente a /admin
   }
 
   return (
