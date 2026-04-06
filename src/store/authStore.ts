@@ -14,7 +14,7 @@ interface AuthStore {
 
 export const useAuthStore = create<AuthStore>((set) => ({
   user: null,
-  loading: false, // true mientras se verifica la sesión de Supabase
+  loading: true, // true hasta que getSession() resuelva — evita flash redirect en rutas protegidas
   setUser: (user) => set({ user }),
   setLoading: (loading) => set({ loading }),
 }))

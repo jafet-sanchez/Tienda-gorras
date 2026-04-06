@@ -115,9 +115,33 @@ export async function updateProduct(id: string, input: Partial<ProductInput>): P
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  // Primero eliminar variantes (FK constraint)
+  // 1. Obtener variantes para limpiar los archivos de Storage
+  const { data: variantes } = await supabase
+    .from('variantes')
+    .select('imagen_url')
+    .eq('producto_id', id)
+
+  // 2. Bulk remove de Storage en una sola llamada
+  if (variantes && variantes.length > 0) {
+    const storagePrefix = '/storage/v1/object/public/productos/'
+    const paths = variantes
+      .map((v) => {
+        const idx = (v.imagen_url as string).indexOf(storagePrefix)
+        return idx !== -1
+          ? decodeURIComponent((v.imagen_url as string).slice(idx + storagePrefix.length))
+          : null
+      })
+      .filter((p): p is string => p !== null)
+
+    if (paths.length > 0) {
+      await supabase.storage.from('productos').remove(paths)
+    }
+  }
+
+  // 3. Eliminar variantes (FK constraint)
   await supabase.from('variantes').delete().eq('producto_id', id)
 
+  // 4. Eliminar producto
   const { error } = await supabase
     .from('productos')
     .delete()
@@ -131,19 +155,6 @@ export async function updateStock(id: string, stock: number): Promise<void> {
     .from('productos')
     .update({ stock })
     .eq('id', id)
-
-  if (error) throw error
-}
-
-/**
- * Decrementa el stock de forma atómica usando función SQL.
- * Nunca baja de 0. Diseñada para llamarse al confirmar un pedido.
- */
-export async function decrementStock(productId: string, quantity: number): Promise<void> {
-  const { error } = await supabase.rpc('decrement_stock', {
-    p_product_id: productId,
-    p_quantity: quantity,
-  })
 
   if (error) throw error
 }

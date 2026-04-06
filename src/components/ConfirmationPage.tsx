@@ -3,7 +3,6 @@ import { useCart } from '../hooks/useCart'
 import { formatCOP } from '../utils/formatPrice'
 import { WHATSAPP_NUMBER } from '../data/products'
 import { insertOrder } from '../services/orders'
-import { decrementStock } from '../services/products'
 
 export default function ConfirmationPage() {
   const { items, subtotal, shippingCost, total, shippingInfo, clearCart } = useCart()
@@ -74,10 +73,7 @@ export default function ConfirmationPage() {
         shippingInfo.phone
       )
 
-      // Descontar stock de cada producto (atómico, nunca baja de 0)
-      await Promise.all(
-        items.map(({ product, quantity }) => decrementStock(product.id, quantity))
-      )
+      // El stock se descuenta automáticamente vía trigger SQL en pedidos
     } catch {
       // El pedido de WhatsApp continúa aunque falle el guardado
     }

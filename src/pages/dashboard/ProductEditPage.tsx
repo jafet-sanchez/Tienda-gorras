@@ -13,6 +13,9 @@ import {
 } from '../../services/products'
 import { fetchCategories, type Categoria } from '../../services/categories'
 
+const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp'])
+const MAX_SIZE_BYTES = 5 * 1024 * 1024 // 5 MB
+
 const PRODUCT_TYPES = [
   { value: 'ajustable', label: 'Ajustable' },
   { value: 'cerrada', label: 'Cerrada' },
@@ -101,6 +104,16 @@ export default function ProductEditPage() {
   function handleFileSelect(e: ChangeEvent<HTMLInputElement>) {
     const files = e.target.files
     if (!files) return
+
+    const invalid = Array.from(files).filter(
+      (f) => !ALLOWED_MIME.has(f.type) || f.size > MAX_SIZE_BYTES
+    )
+
+    if (invalid.length > 0) {
+      setError('Archivos no válidos: solo JPG, PNG o WebP hasta 5 MB.')
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
 
     const newPending: PendingImage[] = Array.from(files).map((file) => ({
       file,
