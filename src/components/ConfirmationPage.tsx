@@ -25,8 +25,10 @@ export default function ConfirmationPage() {
   const buildWhatsAppMessage = () => {
     let msg = `¡Hola! Quiero confirmar mi pedido en *Krowm Gorras* 🧢\n\n`
     msg += `*Productos:*\n`
+    const origin = window.location.origin
     items.forEach(({ product, quantity }) => {
       msg += `• ${product.name} x${quantity} — ${formatCOP(product.numericPrice * quantity)}\n`
+      msg += `  ${origin}/producto/${product.id}\n`
     })
     msg += `\n*Subtotal:* ${formatCOP(subtotal)}\n`
     msg += `*Envío:* ${shippingCost === 0 ? 'Gratis' : formatCOP(shippingCost)}\n`

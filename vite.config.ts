@@ -10,24 +10,19 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   plugins: [
     react(),
-    // Serve Productos/ and video/ as static directories in dev
+    // Serve video/ as static directory in dev
     {
       name: 'serve-local-assets',
       configureServer(server) {
-        server.middlewares.use(
-          '/Productos',
-          sirv(path.resolve(__dirname, 'Productos'), { dev: true, etag: true })
-        )
         server.middlewares.use(
           '/video',
           sirv(path.resolve(__dirname, 'video'), { dev: true, etag: true })
         )
       },
     },
-    // Copy Productos/ and video/ into dist/ for production builds
+    // Copy video/ into dist/ for production builds
     viteStaticCopy({
       targets: [
-        { src: 'Productos', dest: '.' },
         { src: 'video', dest: '.' },
       ],
     }),

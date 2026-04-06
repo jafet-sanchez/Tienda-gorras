@@ -7,5 +7,9 @@
       "mcp__supabase__execute_sql",
       "Bash(npx tsc:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "supabase"
+  ],
+  "enableAllProjectMcpServers": true
 }

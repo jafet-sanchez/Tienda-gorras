@@ -44,9 +44,9 @@ export default function Navbar() {
         <a
           href="#inicio"
           onClick={(e) => { e.preventDefault(); handleNavClick('#inicio') }}
-          className="font-display text-2xl tracking-ultra text-text-primary hover:text-neon transition-colors duration-300"
+          className="font-display text-2xl tracking-ultra text-text-primary hover:text-neon transition-colors duration-300" 
         >
-          KROWM
+          KROWM 
         </a>
 
         {/* Desktop links + cart */}
