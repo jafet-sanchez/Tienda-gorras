@@ -37,6 +37,26 @@ export default function Navbar() {
     setMenuOpen(false)
   }
 
+  const handleUserClick = () => {
+    if (user) {
+      navigate('/admin')
+    } else {
+      setLoginOpen((o) => !o)
+    }
+  }
+
+  const UserIcon = () => (
+    <svg className="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    </svg>
+  )
+
+  const CartIcon = () => (
+    <svg className="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+    </svg>
+  )
+
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-[background-color,border-color,box-shadow] duration-300 ${
@@ -48,12 +68,12 @@ export default function Navbar() {
         <a
           href="#inicio"
           onClick={(e) => { e.preventDefault(); handleNavClick('#inicio') }}
-          className="font-display text-2xl tracking-ultra text-text-primary hover:text-neon transition-colors duration-300" 
+          className="font-display text-2xl tracking-ultra text-text-primary hover:text-neon transition-colors duration-300"
         >
-          KROWM 
+          KROWM
         </a>
 
-        {/* Desktop links + cart */}
+        {/* Desktop links + acciones */}
         <div className="hidden md:flex items-center gap-8">
           <ul className="flex items-center gap-8">
             {navLinks.map((link) => (
@@ -69,15 +89,14 @@ export default function Navbar() {
             ))}
           </ul>
 
+          {/* Carrito */}
           <button
             type="button"
             onClick={() => setDrawerOpen(true)}
             className="relative p-2 text-text-secondary hover:text-neon transition-colors duration-300"
             aria-label={`Carrito (${itemCount} productos)`}
           >
-            <svg className="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-            </svg>
+            <CartIcon />
             {itemCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-neon text-surface text-[9px] font-bold rounded-full flex items-center justify-center">
                 {itemCount}
@@ -85,28 +104,22 @@ export default function Navbar() {
             )}
           </button>
 
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => user ? navigate('/admin') : setLoginOpen((o) => !o)}
-              className={`relative p-2 transition-colors duration-300 ${user ? 'text-neon' : 'text-text-secondary hover:text-neon'}`}
-              aria-label={user ? 'Ir al panel de administración' : 'Iniciar sesión como administrador'}
-              aria-expanded={!user ? loginOpen : undefined}
-            >
-              <svg className="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-              </svg>
-              {user && (
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-neon rounded-full" />
-              )}
-            </button>
-            {loginOpen && !user && (
-              <LoginPopover onClose={() => setLoginOpen(false)} />
+          {/* Usuario — solo el botón, el popover está fuera */}
+          <button
+            type="button"
+            onClick={handleUserClick}
+            className={`relative p-2 transition-colors duration-300 ${user ? 'text-neon' : 'text-text-secondary hover:text-neon'}`}
+            aria-label={user ? 'Ir al panel de administración' : 'Iniciar sesión como administrador'}
+            aria-expanded={!user ? loginOpen : undefined}
+          >
+            <UserIcon />
+            {user && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-neon rounded-full" />
             )}
-          </div>
+          </button>
         </div>
 
-        {/* Mobile: cart + user + hamburger */}
+        {/* Mobile: carrito + usuario + hamburger */}
         <div className="md:hidden flex items-center gap-1">
           <button
             type="button"
@@ -114,9 +127,7 @@ export default function Navbar() {
             className="relative p-2 text-text-secondary hover:text-neon transition-colors duration-300"
             aria-label={`Carrito (${itemCount} productos)`}
           >
-            <svg className="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 10-7.5 0v4.5m11.356-1.993l1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 01-1.12-1.243l1.264-12A1.125 1.125 0 015.513 7.5h12.974c.576 0 1.059.435 1.119 1.007zM8.625 10.5a.375.375 0 11-.75 0 .375.375 0 01.75 0zm7.5 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-            </svg>
+            <CartIcon />
             {itemCount > 0 && (
               <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-neon text-surface text-[9px] font-bold rounded-full flex items-center justify-center">
                 {itemCount}
@@ -124,25 +135,18 @@ export default function Navbar() {
             )}
           </button>
 
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => user ? navigate('/admin') : setLoginOpen((o) => !o)}
-              className={`relative p-2 transition-colors duration-300 ${user ? 'text-neon' : 'text-text-secondary hover:text-neon'}`}
-              aria-label={user ? 'Ir al panel de administración' : 'Iniciar sesión como administrador'}
-              aria-expanded={!user ? loginOpen : undefined}
-            >
-              <svg className="w-5 h-5" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-              </svg>
-              {user && (
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-neon rounded-full" />
-              )}
-            </button>
-            {loginOpen && !user && (
-              <LoginPopover onClose={() => setLoginOpen(false)} />
+          <button
+            type="button"
+            onClick={handleUserClick}
+            className={`relative p-2 transition-colors duration-300 ${user ? 'text-neon' : 'text-text-secondary hover:text-neon'}`}
+            aria-label={user ? 'Ir al panel de administración' : 'Iniciar sesión como administrador'}
+            aria-expanded={!user ? loginOpen : undefined}
+          >
+            <UserIcon />
+            {user && (
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-neon rounded-full" />
             )}
-          </div>
+          </button>
 
           <button
             type="button"
@@ -157,6 +161,13 @@ export default function Navbar() {
           </button>
         </div>
       </nav>
+
+      {/* Popover de login — único, posicionado desde el header */}
+      {loginOpen && !user && (
+        <div className="absolute right-4 md:right-8 top-16">
+          <LoginPopover onClose={() => setLoginOpen(false)} />
+        </div>
+      )}
 
       {/* Mobile menu */}
       {menuOpen && (
