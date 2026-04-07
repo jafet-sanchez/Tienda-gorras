@@ -1,3 +1,7 @@
+import { motion } from 'framer-motion'
+
+const ease = [0.22, 1, 0.36, 1] as [number, number, number, number]
+
 export default function Hero() {
   return (
     <section
@@ -22,29 +26,48 @@ export default function Hero() {
       {/* Content */}
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
         {/* Tagline */}
-        <p className="text-xs md:text-sm font-semibold tracking-ultra uppercase text-neon mb-6 animate-fade-up">
+        <motion.p
+          className="text-xs md:text-sm font-semibold tracking-ultra uppercase text-neon mb-6"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease, delay: 0 }}
+        >
           Streetwear Headwear
-        </p>
+        </motion.p>
 
         {/* Main title */}
-        <h1 className="font-display text-[5rem] md:text-[9rem] lg:text-[12rem] leading-[0.85] tracking-wider text-text-primary mb-6 animate-fade-up [animation-delay:100ms] [text-wrap:balance]">
+        <motion.h1
+          className="font-display text-[5rem] md:text-[9rem] lg:text-[12rem] leading-[0.85] tracking-wider text-text-primary mb-6 [text-wrap:balance]"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease, delay: 0.12 }}
+        >
           KROWM
-        </h1>
+        </motion.h1>
 
         {/* Subtitle */}
-        <p className="text-sm md:text-base text-text-secondary tracking-widest uppercase font-light mb-12 animate-fade-up [animation-delay:200ms]">
+        <motion.p
+          className="text-sm md:text-base text-text-secondary tracking-widest uppercase font-light mb-12"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease, delay: 0.24 }}
+        >
           Gorras premium &mdash; Colombia
-        </p>
+        </motion.p>
 
         {/* CTA */}
-        <div className="animate-fade-up [animation-delay:350ms]">
+        <motion.div
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease, delay: 0.38 }}
+        >
           <a
             href="#catalogo"
             className="inline-block bg-neon text-surface text-xs font-bold tracking-widest uppercase px-12 py-4 hover:bg-neon-hover transition-[background-color,box-shadow] duration-300 neon-box-glow"
           >
             Ver catálogo
           </a>
-        </div>
+        </motion.div>
       </div>
 
       {/* Marquee ticker */}
@@ -74,10 +97,20 @@ export default function Hero() {
       </div>
 
       {/* Scroll indicator */}
-      <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-text-muted animate-pulse-neon">
+      <motion.div
+        className="absolute bottom-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-text-muted"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1, duration: 0.8 }}
+      >
         <span className="text-[10px] tracking-ultra uppercase">Scroll</span>
-        <span className="w-px h-8 bg-neon/40" />
-      </div>
+        <motion.span
+          className="w-px h-8 bg-neon/40"
+          animate={{ scaleY: [1, 0.4, 1], opacity: [0.4, 1, 0.4] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          style={{ originY: 0 }}
+        />
+      </motion.div>
     </section>
   )
 }

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 import { useAuthStore } from '../store/authStore'
@@ -97,14 +98,23 @@ export default function Navbar() {
             aria-label={`Carrito (${itemCount} productos)`}
           >
             <CartIcon />
-            {itemCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-neon text-surface text-[9px] font-bold rounded-full flex items-center justify-center">
-                {itemCount}
-              </span>
-            )}
+            <AnimatePresence>
+              {itemCount > 0 && (
+                <motion.span
+                  key="badge"
+                  className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-neon text-surface text-[9px] font-bold rounded-full flex items-center justify-center"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                >
+                  {itemCount}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
 
-          {/* Usuario — solo el botón, el popover está fuera */}
+          {/* Usuario */}
           <button
             type="button"
             onClick={handleUserClick}
@@ -128,11 +138,20 @@ export default function Navbar() {
             aria-label={`Carrito (${itemCount} productos)`}
           >
             <CartIcon />
-            {itemCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-neon text-surface text-[9px] font-bold rounded-full flex items-center justify-center">
-                {itemCount}
-              </span>
-            )}
+            <AnimatePresence>
+              {itemCount > 0 && (
+                <motion.span
+                  key="badge-mobile"
+                  className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-neon text-surface text-[9px] font-bold rounded-full flex items-center justify-center"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                >
+                  {itemCount}
+                </motion.span>
+              )}
+            </AnimatePresence>
           </button>
 
           <button
@@ -155,38 +174,72 @@ export default function Navbar() {
             aria-label="Abrir menú"
             aria-expanded={menuOpen}
           >
-            <span className={`block w-5 h-0.5 bg-text-primary transition-transform duration-300 ${menuOpen ? 'translate-y-2 rotate-45' : ''}`} />
-            <span className={`block w-5 h-0.5 bg-text-primary transition-opacity duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
-            <span className={`block w-5 h-0.5 bg-text-primary transition-transform duration-300 ${menuOpen ? '-translate-y-2 -rotate-45' : ''}`} />
+            <motion.span
+              className="block w-5 h-0.5 bg-text-primary origin-center"
+              animate={menuOpen ? { rotate: 45, y: 8 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.25 }}
+            />
+            <motion.span
+              className="block w-5 h-0.5 bg-text-primary"
+              animate={menuOpen ? { opacity: 0, scaleX: 0 } : { opacity: 1, scaleX: 1 }}
+              transition={{ duration: 0.2 }}
+            />
+            <motion.span
+              className="block w-5 h-0.5 bg-text-primary origin-center"
+              animate={menuOpen ? { rotate: -45, y: -8 } : { rotate: 0, y: 0 }}
+              transition={{ duration: 0.25 }}
+            />
           </button>
         </div>
       </nav>
 
-      {/* Popover de login — único, posicionado desde el header */}
-      {loginOpen && !user && (
-        <div className="absolute right-4 md:right-8 top-16">
-          <LoginPopover onClose={() => setLoginOpen(false)} />
-        </div>
-      )}
+      {/* Login popover */}
+      <AnimatePresence>
+        {loginOpen && !user && (
+          <motion.div
+            className="absolute right-4 md:right-8 top-16"
+            initial={{ opacity: 0, scale: 0.95, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -8 }}
+            transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+            style={{ transformOrigin: 'top right' }}
+          >
+            <LoginPopover onClose={() => setLoginOpen(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-surface border-t border-border px-6 py-6">
-          <ul className="flex flex-col gap-5">
-            {navLinks.map((link) => (
-              <li key={link.href}>
-                <a
-                  href={link.href}
-                  className="text-sm font-semibold tracking-widest uppercase text-text-secondary hover:text-neon transition-colors"
-                  onClick={(e) => { e.preventDefault(); handleNavClick(link.href) }}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            className="md:hidden bg-surface border-t border-border px-6 overflow-hidden"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          >
+            <ul className="flex flex-col gap-5 py-6">
+              {navLinks.map((link, i) => (
+                <motion.li
+                  key={link.href}
+                  initial={{ opacity: 0, x: -16 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.05 + 0.05, duration: 0.25 }}
                 >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+                  <a
+                    href={link.href}
+                    className="text-sm font-semibold tracking-widest uppercase text-text-secondary hover:text-neon transition-colors"
+                    onClick={(e) => { e.preventDefault(); handleNavClick(link.href) }}
+                  >
+                    {link.label}
+                  </a>
+                </motion.li>
+              ))}
+            </ul>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </header>
   )
 }

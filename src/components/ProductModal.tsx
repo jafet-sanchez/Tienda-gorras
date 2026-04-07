@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import type { Product } from '../services/products'
 import { useCart } from '../hooks/useCart'
 
@@ -36,24 +37,39 @@ export default function ProductModal({ product, initialIndex = 0, onClose }: Pro
   }
 
   return createPortal(
-    <div
+    <motion.div
       className="fixed inset-0 z-[100] bg-surface/90 backdrop-blur-sm flex items-center justify-center p-4 overscroll-contain"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
       onClick={onClose}
     >
-      <div
-        className="bg-surface-light border border-border max-w-5xl w-full max-h-[90vh] overflow-y-auto overscroll-contain flex flex-col md:flex-row animate-fade-up"
+      <motion.div
+        className="bg-surface-light border border-border max-w-5xl w-full max-h-[90vh] overflow-y-auto overscroll-contain flex flex-col md:flex-row"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Image area */}
         <div className="relative md:w-2/3 bg-surface flex items-center justify-center min-h-72">
-          <img
-            key={current}
-            src={product.images[current]}
-            alt={`${product.name} — imagen ${current + 1}`}
-            width={1200}
-            height={1200}
-            className="max-h-[60vh] w-full object-contain"
-          />
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.img
+              key={current}
+              src={product.images[current]}
+              alt={`${product.name} — imagen ${current + 1}`}
+              width={1200}
+              height={1200}
+              decoding="async"
+              className="max-h-[60vh] w-full object-contain"
+              initial={{ opacity: 0, x: 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -16 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+            />
+          </AnimatePresence>
 
           {/* Arrows */}
           {product.images.length > 1 && (
@@ -120,6 +136,8 @@ export default function ProductModal({ product, initialIndex = 0, onClose }: Pro
                     alt={`${product.name} miniatura ${i + 1}`}
                     width={56}
                     height={56}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </button>
@@ -127,16 +145,17 @@ export default function ProductModal({ product, initialIndex = 0, onClose }: Pro
             </div>
           )}
 
-          <button
+          <motion.button
             type="button"
             onClick={handleAddToCart}
             className="block w-full text-center bg-neon hover:bg-neon-hover text-surface text-xs font-bold tracking-widest uppercase py-4 transition-[background-color] duration-300"
+            whileTap={{ scale: 0.97 }}
           >
             Agregar al carrito
-          </button>
+          </motion.button>
         </div>
-      </div>
-    </div>,
+      </motion.div>
+    </motion.div>,
     document.body
   )
 }

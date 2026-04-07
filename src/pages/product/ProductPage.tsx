@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useProduct } from '../../hooks/useProducts'
 import { useCart } from '../../hooks/useCart'
 import { formatCOP } from '../../utils/formatPrice'
+
+const ease = [0.22, 1, 0.36, 1] as [number, number, number, number]
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>()
@@ -45,25 +48,43 @@ export default function ProductPage() {
       <div className="max-w-6xl mx-auto">
 
         {/* Breadcrumb */}
-        <Link
-          to="/"
-          className="text-xs tracking-widest uppercase text-text-muted hover:text-neon inline-flex items-center gap-2 transition-colors mb-10"
+        <motion.div
+          initial={{ opacity: 0, x: -12 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut' }}
         >
-          ← Volver al catálogo
-        </Link>
+          <Link
+            to="/"
+            className="text-xs tracking-widest uppercase text-text-muted hover:text-neon inline-flex items-center gap-2 transition-colors mb-10"
+          >
+            ← Volver al catálogo
+          </Link>
+        </motion.div>
 
         <div className="flex flex-col lg:flex-row gap-12">
 
           {/* ── Galería ── */}
-          <div className="lg:w-2/3 flex flex-col gap-4">
+          <motion.div
+            className="lg:w-2/3 flex flex-col gap-4"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease, delay: 0.05 }}
+          >
             {/* Imagen principal */}
             <div className="relative bg-surface-light border border-border overflow-hidden aspect-square">
-              <img
-                key={current}
-                src={product.images[current]}
-                alt={`${product.name} — imagen ${current + 1}`}
-                className="w-full h-full object-contain animate-fade-up"
-              />
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.img
+                  key={current}
+                  src={product.images[current]}
+                  alt={`${product.name} — imagen ${current + 1}`}
+                  decoding="async"
+                  className="w-full h-full object-contain"
+                  initial={{ opacity: 0, scale: 1.03 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.3, ease: 'easeOut' }}
+                />
+              </AnimatePresence>
 
               {product.images.length > 1 && (
                 <>
@@ -113,16 +134,23 @@ export default function ProductPage() {
                       alt={`${product.name} miniatura ${i + 1}`}
                       width={64}
                       height={64}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover"
                     />
                   </button>
                 ))}
               </div>
             )}
-          </div>
+          </motion.div>
 
           {/* ── Info ── */}
-          <div className="lg:w-1/3 flex flex-col gap-6 lg:pt-2">
+          <motion.div
+            className="lg:w-1/3 flex flex-col gap-6 lg:pt-2"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease, delay: 0.15 }}
+          >
             <div>
               <p className="text-xs font-semibold tracking-ultra uppercase text-neon mb-3">
                 Krowm Gorras
@@ -130,7 +158,12 @@ export default function ProductPage() {
               <h1 className="font-display text-4xl md:text-5xl tracking-wider text-text-primary uppercase leading-none">
                 {product.name}
               </h1>
-              <div className="mt-4 w-10 h-0.5 bg-neon" />
+              <motion.div
+                className="mt-4 h-0.5 bg-neon"
+                initial={{ width: 0 }}
+                animate={{ width: 40 }}
+                transition={{ delay: 0.35, duration: 0.5, ease: 'easeOut' }}
+              />
             </div>
 
             <p className="font-display text-4xl text-neon tracking-wider">
@@ -154,7 +187,7 @@ export default function ProductPage() {
               </div>
             </div>
 
-            <button
+            <motion.button
               type="button"
               onClick={handleAdd}
               className={`w-full inline-flex items-center justify-center gap-3 text-xs font-bold tracking-widest uppercase py-5 transition-[background-color,color,border-color,box-shadow] duration-300 ${
@@ -162,28 +195,45 @@ export default function ProductPage() {
                   ? 'bg-neon/20 text-neon border border-neon/50'
                   : 'bg-neon hover:bg-neon-hover text-surface neon-box-glow'
               }`}
+              whileTap={{ scale: 0.98 }}
             >
-              {added ? (
-                <>
-                  <svg className="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
-                  </svg>
-                  Agregado al carrito
-                </>
-              ) : (
-                <>
-                  <svg className="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                  </svg>
-                  Agregar al carrito
-                </>
-              )}
-            </button>
+              <AnimatePresence mode="wait" initial={false}>
+                {added ? (
+                  <motion.span
+                    key="added"
+                    className="inline-flex items-center gap-3"
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ duration: 0.18 }}
+                  >
+                    <svg className="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                    </svg>
+                    Agregado al carrito
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="add"
+                    className="inline-flex items-center gap-3"
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ duration: 0.18 }}
+                  >
+                    <svg className="w-4 h-4" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
+                    Agregar al carrito
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
 
             <p className="text-[10px] text-text-muted tracking-wide text-center">
               El pedido se coordina por WhatsApp al confirmar
             </p>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

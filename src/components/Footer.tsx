@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { WHATSAPP_NUMBER } from '../data/products'
 
 export default function Footer() {
@@ -103,9 +103,17 @@ export default function Footer() {
           <p className="text-text-muted text-[10px] tracking-ultra uppercase">
             &copy; {new Date().getFullYear()} Krowm Gorras. Colombia.
           </p>
-          <p className="text-text-muted text-[10px] tracking-widest uppercase">
-            Todos los derechos reservados
-          </p>
+          <div className="flex items-center gap-6">
+            <Link
+              to="/privacidad"
+              className="text-text-muted text-[10px] tracking-widest uppercase hover:text-neon transition-colors duration-300"
+            >
+              Política de privacidad
+            </Link>
+            <p className="text-text-muted text-[10px] tracking-widest uppercase">
+              Todos los derechos reservados
+            </p>
+          </div>
         </div>
       </div>
     </footer>
