@@ -10,9 +10,14 @@ const ease = [0.22, 1, 0.36, 1] as [number, number, number, number]
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>()
   const { product, loading } = useProduct(id)
-  const { addItem } = useCart()
+  const { addItem, items } = useCart()
   const [current, setCurrent] = useState(0)
   const [added, setAdded] = useState(false)
+
+  const inCartQty = product ? (items.find((i) => i.product.id === product.id)?.quantity ?? 0) : 0
+  const isOutOfStock = product ? product.stock === 0 : false
+  const isAtLimit = product ? (product.stock > 0 && inCartQty >= product.stock) : false
+  const disabled = isOutOfStock || isAtLimit
 
   useEffect(() => {
     if (!product) return
@@ -38,10 +43,19 @@ export default function ProductPage() {
   const next = () => setCurrent((c) => (c + 1) % product.images.length)
 
   const handleAdd = () => {
+    if (disabled) return
     addItem(product)
     setAdded(true)
     setTimeout(() => setAdded(false), 1200)
   }
+
+  const stockLabel = isOutOfStock
+    ? { text: 'Sin stock disponible', color: 'text-danger' }
+    : product.stock <= 3
+      ? { text: `¡Solo quedan ${product.stock} unidades!`, color: 'text-orange-400' }
+      : product.stock <= 10
+        ? { text: `${product.stock} unidades disponibles`, color: 'text-yellow-400/80' }
+        : { text: `${product.stock} unidades disponibles`, color: 'text-text-muted' }
 
   return (
     <section className="min-h-screen pt-24 pb-16 px-6">
@@ -78,13 +92,22 @@ export default function ProductPage() {
                   src={product.images[current]}
                   alt={`${product.name} — imagen ${current + 1}`}
                   decoding="async"
-                  className="w-full h-full object-contain"
+                  className={`w-full h-full object-contain transition-opacity duration-300 ${isOutOfStock ? 'opacity-50' : ''}`}
                   initial={{ opacity: 0, scale: 1.03 }}
-                  animate={{ opacity: 1, scale: 1 }}
+                  animate={{ opacity: isOutOfStock ? 0.5 : 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.97 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
                 />
               </AnimatePresence>
+
+              {/* Agotado overlay en imagen */}
+              {isOutOfStock && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="text-sm font-bold tracking-ultra uppercase text-text-muted border border-border px-6 py-3 bg-surface/80">
+                    Agotado
+                  </span>
+                </div>
+              )}
 
               {product.images.length > 1 && (
                 <>
@@ -166,9 +189,20 @@ export default function ProductPage() {
               />
             </div>
 
-            <p className="font-display text-4xl text-neon tracking-wider">
-              {product.price}
-            </p>
+            <div className="flex items-baseline justify-between gap-4">
+              <p className="font-display text-4xl text-neon tracking-wider">
+                {product.price}
+              </p>
+              {/* Stock badge */}
+              <motion.p
+                className={`text-[10px] font-semibold tracking-widest uppercase ${stockLabel.color}`}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+              >
+                {stockLabel.text}
+              </motion.p>
+            </div>
 
             {product.descripcion && (
               <p className="text-sm text-text-secondary leading-relaxed">
@@ -190,15 +224,42 @@ export default function ProductPage() {
             <motion.button
               type="button"
               onClick={handleAdd}
+              disabled={disabled}
               className={`w-full inline-flex items-center justify-center gap-3 text-xs font-bold tracking-widest uppercase py-5 transition-[background-color,color,border-color,box-shadow] duration-300 ${
-                added
-                  ? 'bg-neon/20 text-neon border border-neon/50'
-                  : 'bg-neon hover:bg-neon-hover text-surface neon-box-glow'
+                isOutOfStock
+                  ? 'bg-surface border border-border text-text-muted cursor-not-allowed'
+                  : isAtLimit
+                    ? 'bg-neon/10 text-neon/60 border border-neon/20 cursor-not-allowed'
+                    : added
+                      ? 'bg-neon/20 text-neon border border-neon/50'
+                      : 'bg-neon hover:bg-neon-hover text-surface neon-box-glow'
               }`}
-              whileTap={{ scale: 0.98 }}
+              whileTap={disabled ? undefined : { scale: 0.98 }}
             >
               <AnimatePresence mode="wait" initial={false}>
-                {added ? (
+                {isOutOfStock ? (
+                  <motion.span
+                    key="out"
+                    className="inline-flex items-center gap-3"
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ duration: 0.18 }}
+                  >
+                    Sin stock disponible
+                  </motion.span>
+                ) : isAtLimit ? (
+                  <motion.span
+                    key="limit"
+                    className="inline-flex items-center gap-3"
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.85 }}
+                    transition={{ duration: 0.18 }}
+                  >
+                    Máximo en carrito
+                  </motion.span>
+                ) : added ? (
                   <motion.span
                     key="added"
                     className="inline-flex items-center gap-3"

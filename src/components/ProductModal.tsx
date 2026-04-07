@@ -11,8 +11,13 @@ interface Props {
 }
 
 export default function ProductModal({ product, initialIndex = 0, onClose }: Props) {
-  const { addItem } = useCart()
+  const { addItem, items } = useCart()
   const [current, setCurrent] = useState(initialIndex)
+
+  const inCartQty = items.find((i) => i.product.id === product.id)?.quantity ?? 0
+  const isOutOfStock = product.stock === 0
+  const isAtLimit = product.stock > 0 && inCartQty >= product.stock
+  const disabled = isOutOfStock || isAtLimit
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -32,6 +37,7 @@ export default function ProductModal({ product, initialIndex = 0, onClose }: Pro
   const next = () => setCurrent((c) => (c + 1) % product.images.length)
 
   const handleAddToCart = () => {
+    if (disabled) return
     addItem(product)
     onClose()
   }
@@ -50,7 +56,7 @@ export default function ProductModal({ product, initialIndex = 0, onClose }: Pro
         initial={{ opacity: 0, scale: 0.95, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Image area */}
@@ -63,13 +69,22 @@ export default function ProductModal({ product, initialIndex = 0, onClose }: Pro
               width={1200}
               height={1200}
               decoding="async"
-              className="max-h-[60vh] w-full object-contain"
+              className={`max-h-[60vh] w-full object-contain ${isOutOfStock ? 'opacity-50' : ''}`}
               initial={{ opacity: 0, x: 16 }}
-              animate={{ opacity: 1, x: 0 }}
+              animate={{ opacity: isOutOfStock ? 0.5 : 1, x: 0 }}
               exit={{ opacity: 0, x: -16 }}
               transition={{ duration: 0.25, ease: 'easeOut' }}
             />
           </AnimatePresence>
+
+          {/* Agotado overlay en imagen */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="text-xs font-bold tracking-ultra uppercase text-text-muted border border-border px-5 py-2 bg-surface/80">
+                Agotado
+              </span>
+            </div>
+          )}
 
           {/* Arrows */}
           {product.images.length > 1 && (
@@ -116,6 +131,17 @@ export default function ProductModal({ product, initialIndex = 0, onClose }: Pro
             </button>
             <h2 className="font-display text-3xl tracking-wider text-text-primary mb-2 uppercase">{product.name}</h2>
             <p className="text-2xl font-display text-neon">{product.price}</p>
+
+            {/* Stock indicator */}
+            <p className={`mt-3 text-[10px] font-semibold tracking-widest uppercase ${
+              isOutOfStock ? 'text-danger' : product.stock <= 5 ? 'text-orange-400' : 'text-text-muted'
+            }`}>
+              {isOutOfStock
+                ? 'Sin stock disponible'
+                : product.stock <= 5
+                  ? `Solo quedan ${product.stock} unidades`
+                  : `${product.stock} disponibles`}
+            </p>
           </div>
 
           {/* Thumbnails */}
@@ -148,10 +174,17 @@ export default function ProductModal({ product, initialIndex = 0, onClose }: Pro
           <motion.button
             type="button"
             onClick={handleAddToCart}
-            className="block w-full text-center bg-neon hover:bg-neon-hover text-surface text-xs font-bold tracking-widest uppercase py-4 transition-[background-color] duration-300"
-            whileTap={{ scale: 0.97 }}
+            disabled={disabled}
+            className={`block w-full text-center text-xs font-bold tracking-widest uppercase py-4 transition-[background-color,color,border-color] duration-300 ${
+              isOutOfStock
+                ? 'bg-surface border border-border text-text-muted cursor-not-allowed'
+                : isAtLimit
+                  ? 'bg-neon/10 text-neon/60 border border-neon/20 cursor-not-allowed'
+                  : 'bg-neon hover:bg-neon-hover text-surface'
+            }`}
+            whileTap={disabled ? undefined : { scale: 0.97 }}
           >
-            Agregar al carrito
+            {isOutOfStock ? 'Sin stock' : isAtLimit ? 'Máx. en carrito' : 'Agregar al carrito'}
           </motion.button>
         </div>
       </motion.div>

@@ -131,7 +131,12 @@ export default function CartDrawer() {
                             <button
                               type="button"
                               onClick={() => updateQuantity(product.id, quantity + 1)}
-                              className="w-7 h-7 flex items-center justify-center border border-border text-text-muted hover:text-neon hover:border-neon transition-[color,border-color] duration-300 text-sm"
+                              disabled={quantity >= product.stock}
+                              className={`w-7 h-7 flex items-center justify-center border text-sm transition-[color,border-color] duration-300 ${
+                                quantity >= product.stock
+                                  ? 'border-border text-text-muted/30 cursor-not-allowed'
+                                  : 'border-border text-text-muted hover:text-neon hover:border-neon'
+                              }`}
                               aria-label="Aumentar cantidad"
                             >
                               +
@@ -145,6 +150,11 @@ export default function CartDrawer() {
                               Eliminar
                             </button>
                           </div>
+                          {quantity >= product.stock && (
+                            <p className="text-[10px] text-orange-400/80 tracking-wide mt-1">
+                              Máximo disponible
+                            </p>
+                          )}
                         </div>
                       </motion.li>
                     ))}

@@ -37,7 +37,12 @@ export const useCartStore = create<CartStore>((set) => ({
 
   addItem: (product) =>
     set((state) => {
+      if (product.stock === 0) return state
       const existing = state.items.find((i) => i.product.id === product.id)
+      // Ya tiene la cantidad máxima disponible: abre el drawer pero no incrementa
+      if (existing && existing.quantity >= product.stock) {
+        return { ...state, drawerOpen: true }
+      }
       const items = existing
         ? state.items.map((i) =>
             i.product.id === product.id ? { ...i, quantity: i.quantity + 1 } : i
@@ -50,12 +55,17 @@ export const useCartStore = create<CartStore>((set) => ({
     set((state) => ({ items: state.items.filter((i) => i.product.id !== id) })),
 
   updateQuantity: (id, qty) =>
-    set((state) => ({
-      items:
-        qty <= 0
-          ? state.items.filter((i) => i.product.id !== id)
-          : state.items.map((i) => (i.product.id === id ? { ...i, quantity: qty } : i)),
-    })),
+    set((state) => {
+      const item = state.items.find((i) => i.product.id === id)
+      const maxStock = item?.product.stock ?? qty
+      const clampedQty = Math.min(qty, maxStock)
+      return {
+        items:
+          clampedQty <= 0
+            ? state.items.filter((i) => i.product.id !== id)
+            : state.items.map((i) => (i.product.id === id ? { ...i, quantity: clampedQty } : i)),
+      }
+    }),
 
   clearCart: () => set({ items: [], shippingInfo: null }),
   setDrawerOpen: (open) => set({ drawerOpen: open }),

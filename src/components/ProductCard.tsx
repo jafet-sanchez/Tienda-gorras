@@ -29,12 +29,18 @@ export default function ProductCard({ product, priority = false }: Props) {
   const [hovered, setHovered] = useState(false)
   const [modalOpen, setModalOpen] = useState(false)
   const [added, setAdded] = useState(false)
-  const { addItem } = useCart()
+  const { addItem, items } = useCart()
 
   const mainImage = product.images[0]
   const hoverImage = product.images[1] ?? product.images[0]
 
+  const inCartQty = items.find((i) => i.product.id === product.id)?.quantity ?? 0
+  const isOutOfStock = product.stock === 0
+  const isAtLimit = product.stock > 0 && inCartQty >= product.stock
+  const disabled = isOutOfStock || isAtLimit
+
   const handleAdd = () => {
+    if (disabled) return
     addItem(product)
     setAdded(true)
     setTimeout(() => setAdded(false), 1200)
@@ -45,7 +51,7 @@ export default function ProductCard({ product, priority = false }: Props) {
       <motion.article
         className="group flex flex-col bg-surface-light border border-border hover:border-neon/30 transition-[border-color] duration-500"
         variants={cardVariants}
-        whileHover={{ y: -4 }}
+        whileHover={{ y: isOutOfStock ? 0 : -4 }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
         layout
       >
@@ -67,12 +73,12 @@ export default function ProductCard({ product, priority = false }: Props) {
             loading={priority ? 'eager' : 'lazy'}
             decoding={priority ? 'sync' : 'async'}
             className={`absolute inset-0 w-full h-full object-cover transition-[opacity,transform] duration-700 ${
-              hovered && product.images.length > 1 ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
+              isOutOfStock ? 'opacity-40' : hovered && product.images.length > 1 ? 'opacity-0 scale-105' : 'opacity-100 scale-100'
             }`}
           />
 
           {/* Hover image */}
-          {product.images.length > 1 && (
+          {product.images.length > 1 && !isOutOfStock && (
             <img
               src={hoverImage}
               alt={`${product.name} — vista alternativa`}
@@ -85,16 +91,27 @@ export default function ProductCard({ product, priority = false }: Props) {
             />
           )}
 
-          {/* Hover overlay */}
-          <div
-            className={`absolute inset-0 bg-surface/60 flex items-center justify-center transition-opacity duration-300 ${
-              hovered ? 'opacity-100' : 'opacity-0'
-            }`}
-          >
-            <span className="text-[10px] font-bold tracking-ultra uppercase text-neon border border-neon px-4 py-2">
-              Ver galería
-            </span>
-          </div>
+          {/* Agotado overlay */}
+          {isOutOfStock && (
+            <div className="absolute inset-0 bg-surface/70 flex items-center justify-center">
+              <span className="text-[10px] font-bold tracking-ultra uppercase text-text-muted border border-border px-4 py-2">
+                Agotado
+              </span>
+            </div>
+          )}
+
+          {/* Hover overlay (solo si hay stock) */}
+          {!isOutOfStock && (
+            <div
+              className={`absolute inset-0 bg-surface/60 flex items-center justify-center transition-opacity duration-300 ${
+                hovered ? 'opacity-100' : 'opacity-0'
+              }`}
+            >
+              <span className="text-[10px] font-bold tracking-ultra uppercase text-neon border border-neon px-4 py-2">
+                Ver galería
+              </span>
+            </div>
+          )}
         </button>
 
         {/* Product info */}
@@ -111,16 +128,43 @@ export default function ProductCard({ product, priority = false }: Props) {
           <motion.button
             type="button"
             onClick={handleAdd}
+            disabled={disabled}
             className={`inline-flex items-center justify-center gap-2 text-xs font-bold tracking-widest uppercase py-3 px-4 transition-[background-color,color,border-color] duration-300 w-full ${
-              added
-                ? 'bg-neon/20 text-neon border border-neon/50'
-                : 'bg-neon text-surface hover:bg-neon-hover'
+              isOutOfStock
+                ? 'bg-surface border border-border text-text-muted cursor-not-allowed'
+                : isAtLimit
+                  ? 'bg-neon/10 text-neon/60 border border-neon/20 cursor-not-allowed'
+                  : added
+                    ? 'bg-neon/20 text-neon border border-neon/50'
+                    : 'bg-neon text-surface hover:bg-neon-hover'
             }`}
-            whileTap={{ scale: 0.97 }}
+            whileTap={disabled ? undefined : { scale: 0.97 }}
             aria-label={`Agregar ${product.name} al carrito`}
           >
             <AnimatePresence mode="wait" initial={false}>
-              {added ? (
+              {isOutOfStock ? (
+                <motion.span
+                  key="out"
+                  className="inline-flex items-center gap-2"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  Sin stock
+                </motion.span>
+              ) : isAtLimit ? (
+                <motion.span
+                  key="limit"
+                  className="inline-flex items-center gap-2"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.18 }}
+                >
+                  Máx. en carrito
+                </motion.span>
+              ) : added ? (
                 <motion.span
                   key="added"
                   className="inline-flex items-center gap-2"
@@ -166,7 +210,9 @@ export default function ProductCard({ product, priority = false }: Props) {
                 '@type': 'Offer',
                 priceCurrency: 'COP',
                 price: product.price.replace(/[^0-9]/g, '') || '0',
-                availability: 'https://schema.org/InStock',
+                availability: product.stock > 0
+                  ? 'https://schema.org/InStock'
+                  : 'https://schema.org/OutOfStock',
               },
             }),
           }}

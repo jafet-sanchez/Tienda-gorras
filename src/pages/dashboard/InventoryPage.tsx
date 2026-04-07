@@ -110,7 +110,15 @@ export default function InventoryPage() {
                 <td className="px-5 py-3 font-medium text-gray-900">{p.name}</td>
                 <td className="px-4 py-3 text-gray-500 hidden md:table-cell">{getCatName(p.categoria_id)}</td>
                 <td className="px-4 py-3">
-                  <span className={`inline-block w-2.5 h-2.5 rounded-full ${getStockColor(p.stock)}`} />
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-block w-2.5 h-2.5 rounded-full flex-shrink-0 ${getStockColor(p.stock)}`} />
+                    {p.stock === 0 && (
+                      <span className="text-xs font-semibold text-red-600 uppercase tracking-wide">Agotado</span>
+                    )}
+                    {p.stock > 0 && p.stock <= 5 && (
+                      <span className="text-xs font-semibold text-orange-500 uppercase tracking-wide">Stock bajo</span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-5 py-3 text-right">
                   {editingId === p.id ? (
@@ -121,6 +129,8 @@ export default function InventoryPage() {
                         value={editValue}
                         onChange={(e) => setEditValue(Number(e.target.value))}
                         autoFocus
+                        aria-label="Cantidad en stock"
+                        title="Cantidad en stock"
                         className="w-20 px-2 py-1 border border-gray-300 rounded text-sm text-right focus:outline-none focus:ring-2 focus:ring-gray-900"
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') saveStock(p.id)
@@ -128,16 +138,18 @@ export default function InventoryPage() {
                         }}
                       />
                       <button
+                        type="button"
                         onClick={() => saveStock(p.id)}
                         disabled={savingId === p.id}
                         className="text-xs font-semibold text-green-700 hover:text-green-900 disabled:opacity-50"
                       >
                         ✓
                       </button>
-                      <button onClick={cancelEdit} className="text-xs text-gray-400 hover:text-gray-700">✕</button>
+                      <button type="button" onClick={cancelEdit} className="text-xs text-gray-400 hover:text-gray-700">✕</button>
                     </div>
                   ) : (
                     <button
+                      type="button"
                       onClick={() => startEdit(p)}
                       className="text-sm font-semibold text-gray-700 hover:text-gray-900 tabular-nums underline-offset-2 hover:underline transition-colors"
                       title="Clic para editar"
