@@ -5,6 +5,12 @@ import { useCart } from '../hooks/useCart'
 import { formatCOP } from '../utils/formatPrice'
 import type { ShippingInfo } from '../store/cartStore'
 import { FREE_SHIPPING_THRESHOLD } from '../data/products'
+import {
+  validateShippingInfo,
+  digitsOnly,
+  FIELD_LIMITS,
+  type ShippingErrors,
+} from '../utils/validation'
 
 export default function CheckoutPage() {
   const { items, subtotal, shippingCost, total, setShippingInfo } = useCart()
@@ -20,12 +26,37 @@ export default function CheckoutPage() {
     notes: '',
   })
 
-  const update = (field: keyof ShippingInfo, value: string) =>
-    setForm((prev) => ({ ...prev, [field]: value }))
+  const [errors, setErrors] = useState<ShippingErrors>({})
+
+  const update = (field: keyof ShippingInfo, value: string) => {
+    // Para cedula y phone bloqueamos no-dígitos en tiempo real
+    let next = value
+    if (field === 'cedula') next = digitsOnly(value, FIELD_LIMITS.cedula)
+    if (field === 'phone') next = digitsOnly(value, FIELD_LIMITS.phone)
+    setForm((prev) => ({ ...prev, [field]: next }))
+    if (errors[field]) {
+      setErrors((prev) => {
+        const { [field]: _omit, ...rest } = prev
+        return rest
+      })
+    }
+  }
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
-    setShippingInfo(form)
+    const result = validateShippingInfo(form)
+    if (!result.valid) {
+      setErrors(result.errors)
+      // Scroll al primer error
+      const firstField = Object.keys(result.errors)[0]
+      if (firstField) {
+        const el = document.querySelector<HTMLInputElement>(`[name="${firstField}"]`)
+        el?.focus()
+      }
+      return
+    }
+    setErrors({})
+    setShippingInfo(result.sanitized)
     navigate('/confirmacion')
     window.scrollTo(0, 0)
   }
@@ -44,6 +75,11 @@ export default function CheckoutPage() {
       </section>
     )
   }
+
+  const inputBase =
+    'border bg-surface px-4 py-3 text-sm text-text-primary placeholder-text-muted focus-visible:outline-none transition-[border-color] duration-200'
+  const inputClass = (field: keyof ShippingInfo) =>
+    `${inputBase} ${errors[field] ? 'border-danger focus-visible:border-danger' : 'border-border focus-visible:border-neon'}`
 
   return (
     <section className="min-h-screen pt-24 pb-16 px-6">
@@ -66,7 +102,7 @@ export default function CheckoutPage() {
 
         <div className="flex flex-col lg:flex-row gap-10">
           {/* Form */}
-          <form onSubmit={handleSubmit} className="flex-1 flex flex-col gap-5">
+          <form onSubmit={handleSubmit} noValidate className="flex-1 flex flex-col gap-5">
             <h2 className="text-xs tracking-ultra uppercase text-text-muted font-semibold mb-1 pb-3 border-b border-border">
               Datos de envío
             </h2>
@@ -78,39 +114,52 @@ export default function CheckoutPage() {
                 name="name"
                 autoComplete="name"
                 required
+                maxLength={FIELD_LIMITS.name}
                 value={form.name}
                 onChange={(e) => update('name', e.target.value)}
-                className="border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder-text-muted focus-visible:outline-none focus-visible:border-neon transition-[border-color] duration-200"
+                aria-invalid={!!errors.name}
+                className={inputClass('name')}
                 placeholder="Tu nombre…"
               />
+              {errors.name && <span className="text-[11px] text-danger tracking-wide">{errors.name}</span>}
             </label>
 
             <label className="flex flex-col gap-2">
               <span className="text-xs tracking-widest uppercase text-text-secondary font-semibold">Cédula *</span>
               <input
                 type="text"
+                inputMode="numeric"
+                pattern="\d*"
                 name="cedula"
                 autoComplete="off"
                 required
+                maxLength={FIELD_LIMITS.cedula}
                 value={form.cedula}
                 onChange={(e) => update('cedula', e.target.value)}
-                className="border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder-text-muted focus-visible:outline-none focus-visible:border-neon transition-[border-color] duration-200"
+                aria-invalid={!!errors.cedula}
+                className={inputClass('cedula')}
                 placeholder="1234567890…"
               />
+              {errors.cedula && <span className="text-[11px] text-danger tracking-wide">{errors.cedula}</span>}
             </label>
 
             <label className="flex flex-col gap-2">
               <span className="text-xs tracking-widest uppercase text-text-secondary font-semibold">Teléfono / WhatsApp *</span>
               <input
                 type="tel"
+                inputMode="numeric"
+                pattern="\d*"
                 name="phone"
                 autoComplete="tel"
                 required
+                maxLength={FIELD_LIMITS.phone}
                 value={form.phone}
                 onChange={(e) => update('phone', e.target.value)}
-                className="border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder-text-muted focus-visible:outline-none focus-visible:border-neon transition-[border-color] duration-200"
-                placeholder="300 123 4567…"
+                aria-invalid={!!errors.phone}
+                className={inputClass('phone')}
+                placeholder="3001234567"
               />
+              {errors.phone && <span className="text-[11px] text-danger tracking-wide">{errors.phone}</span>}
             </label>
 
             <label className="flex flex-col gap-2">
@@ -120,11 +169,14 @@ export default function CheckoutPage() {
                 name="address"
                 autoComplete="street-address"
                 required
+                maxLength={FIELD_LIMITS.address}
                 value={form.address}
                 onChange={(e) => update('address', e.target.value)}
-                className="border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder-text-muted focus-visible:outline-none focus-visible:border-neon transition-[border-color] duration-200"
+                aria-invalid={!!errors.address}
+                className={inputClass('address')}
                 placeholder="Calle, número, barrio…"
               />
+              {errors.address && <span className="text-[11px] text-danger tracking-wide">{errors.address}</span>}
             </label>
 
             <label className="flex flex-col gap-2">
@@ -134,11 +186,14 @@ export default function CheckoutPage() {
                 name="barrio"
                 autoComplete="off"
                 required
+                maxLength={FIELD_LIMITS.barrio}
                 value={form.barrio}
                 onChange={(e) => update('barrio', e.target.value)}
-                className="border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder-text-muted focus-visible:outline-none focus-visible:border-neon transition-[border-color] duration-200"
+                aria-invalid={!!errors.barrio}
+                className={inputClass('barrio')}
                 placeholder="Nombre del barrio…"
               />
+              {errors.barrio && <span className="text-[11px] text-danger tracking-wide">{errors.barrio}</span>}
             </label>
 
             <label className="flex flex-col gap-2">
@@ -148,11 +203,14 @@ export default function CheckoutPage() {
                 name="city"
                 autoComplete="address-level2"
                 required
+                maxLength={FIELD_LIMITS.city}
                 value={form.city}
                 onChange={(e) => update('city', e.target.value)}
-                className="border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder-text-muted focus-visible:outline-none focus-visible:border-neon transition-[border-color] duration-200"
+                aria-invalid={!!errors.city}
+                className={inputClass('city')}
                 placeholder="Bogotá, Medellín…"
               />
+              {errors.city && <span className="text-[11px] text-danger tracking-wide">{errors.city}</span>}
             </label>
 
             <label className="flex flex-col gap-2">
@@ -163,6 +221,7 @@ export default function CheckoutPage() {
                 value={form.notes}
                 onChange={(e) => update('notes', e.target.value)}
                 rows={3}
+                maxLength={FIELD_LIMITS.notes}
                 className="border border-border bg-surface px-4 py-3 text-sm text-text-primary placeholder-text-muted focus-visible:outline-none focus-visible:border-neon transition-[border-color] duration-200 resize-none"
                 placeholder="Instrucciones adicionales…"
               />

@@ -1,4 +1,5 @@
 import { supabase } from './supabase'
+import { parseOrderDetalle } from '../utils/validation'
 
 export type OrderStatus = 'pendiente' | 'enviado' | 'completado'
 
@@ -43,7 +44,13 @@ export async function fetchOrders(): Promise<Order[]> {
     .order('created_at', { ascending: false })
 
   if (error) throw error
-  return (data ?? []) as Order[]
+  return (data ?? []).map((row) => ({
+    id: row.id as string,
+    estado: row.estado as OrderStatus,
+    telefono: (row.telefono ?? null) as string | null,
+    created_at: row.created_at as string,
+    detalle_json: parseOrderDetalle(row.detalle_json),
+  }))
 }
 
 export async function updateOrderStatus(id: string, estado: OrderStatus): Promise<void> {
