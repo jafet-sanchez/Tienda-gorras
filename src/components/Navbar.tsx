@@ -27,15 +27,29 @@ export default function Navbar() {
   ]
 
   const handleNavClick = (href: string) => {
-    if (location.pathname !== '/') {
-      navigate('/')
-      setTimeout(() => {
-        document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' })
-      }, 100)
-    } else {
-      document.querySelector(href)?.scrollIntoView({ behavior: 'smooth' })
-    }
+    const wasMenuOpen = menuOpen
     setMenuOpen(false)
+
+    const scrollToTarget = () => {
+      const el = document.querySelector(href)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
+
+    if (location.pathname !== '/') {
+      // Otra ruta: navegar al home y esperar a que monte la seccion
+      navigate('/')
+      setTimeout(scrollToTarget, 200)
+      return
+    }
+
+    // Mismo home: si el menu movil estaba abierto, esperar a que termine
+    // la animacion de cierre (300ms) para evitar que el colapso del menu
+    // desplace el layout y el scroll caiga en la posicion equivocada.
+    if (wasMenuOpen) {
+      setTimeout(scrollToTarget, 320)
+    } else {
+      scrollToTarget()
+    }
   }
 
   const handleUserClick = () => {

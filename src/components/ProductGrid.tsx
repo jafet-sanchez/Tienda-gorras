@@ -27,7 +27,7 @@ export default function ProductGrid() {
     : products
 
   return (
-    <section id="catalogo" className="max-w-7xl mx-auto px-6 py-24">
+    <section id="catalogo" className="max-w-7xl mx-auto px-6 py-24 scroll-mt-20">
       {/* Section header */}
       <motion.div
         className="mb-16"

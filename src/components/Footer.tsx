@@ -21,7 +21,7 @@ export default function Footer() {
   }
 
   return (
-    <footer id="contacto" className="bg-surface border-t border-border">
+    <footer id="contacto" className="bg-surface border-t border-border scroll-mt-20">
       {/* Top marquee */}
       <div className="border-b border-border py-3 overflow-hidden">
         <div className="animate-marquee whitespace-nowrap flex gap-8">
