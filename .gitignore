@@ -62,8 +62,8 @@ coverage/
 
 # ── Claude Code ───────────────────────────────────────────
 CLAUDE.md
-.claude
-.agents
+.claude/
+.agents/
 # ── Misc ──────────────────────────────────────────────────
 *.local
 .cache/
